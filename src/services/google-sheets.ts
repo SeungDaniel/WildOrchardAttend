@@ -1,39 +1,37 @@
-
 import { google } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
 import type { TelegramSendResult } from '@/ai/flows/telegram-flow';
-import serviceAccount from '../../private_key.json';
+
+// ✅ 로컬 JSON 대신 환경변수에서 읽기
+const serviceAccount = {
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+};
 
 // 환경 변수에서 스프레드시트 ID와 시트 이름을 직접 읽어옵니다.
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || 'Users';
-// 사용자가 지정한 시작 행. 값이 없으면 1행부터 시작.
 const START_ROW = parseInt(process.env.GOOGLE_SHEET_START_ROW || '1', 10);
 
 
 /**
- * Creates and creates a Google Auth client using service account credentials from env vars.
- * @returns A promise that resolves to an authenticated GoogleAuth client.
+ * Creates and returns a Google Auth client using service account credentials from env vars.
  */
 async function getGoogleAuth(spreadsheetIdOverride?: string): Promise<{ auth: GoogleAuth; spreadsheetId: string }> {
-  
   const targetSpreadsheetId = spreadsheetIdOverride || SPREADSHEET_ID;
 
-   if (!targetSpreadsheetId) {
-    console.error('CRITICAL: GOOGLE_SPREADSHEET_ID environment variable is not set and no ID was provided.');
+  if (!targetSpreadsheetId) {
+    console.error('CRITICAL: GOOGLE_SPREADSHEET_ID environment variable is not set.');
     throw new Error('서버 환경 변수(Spreadsheet ID)가 설정되지 않았습니다. .env 또는 Vercel 환경 변수 설정을 확인하세요.');
   }
 
   try {
     const auth = new GoogleAuth({
-      credentials: {
-        project_id: serviceAccount.project_id,
-        client_email: serviceAccount.client_email,
-        private_key: serviceAccount.private_key,
-      },
+      credentials: serviceAccount,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
-    
+
     return { auth, spreadsheetId: targetSpreadsheetId };
 
   } catch (err: any) {
@@ -41,6 +39,7 @@ async function getGoogleAuth(spreadsheetIdOverride?: string): Promise<{ auth: Go
     throw new Error(`Google 인증 클라이언트 생성 실패: ${err.message}`);
   }
 }
+
 
 /**
  * Appends a code to column A and timestamp to column B, then reads columns C, D, and E from the newly added row.
@@ -253,3 +252,4 @@ export async function writeToSheet({
     throw new Error(errorMessage);
   }
 }
+
