@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public creation of new scans for the attendance app.
+    // This allows anyone to check in.
+    // However, it does not allow anyone to read, update, or delete existing scans,
+    // which protects user privacy and data integrity.
+    match /scans/{scanId} {
+      allow read, update, delete: if false;
+      allow create: if true;
+    }
+  }
+}
