@@ -6,7 +6,7 @@ export default function CameraPage() {
        <div className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary">Camera Scanner</h1>
         <p className="text-muted-foreground md:text-lg">
-          Point your camera at a QR code to check attendance.
+          팀장님의 스마트폰에 QR코드를 인식시켜주세요.
         </p>
       </div>
       <CameraScanner />
